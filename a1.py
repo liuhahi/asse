@@ -119,9 +119,9 @@ def start_game():
     print('Now try and guess the word, step by step!!')
     # print('word is', word)
     scores = tuple()
-    while guess_no < word_length + 1:
-        display_guess_matrix(guess_no, word_length, scores)
-        if guess_no == word_length + 1:
+    display_guess_matrix(guess_no, word_length, scores)
+    while guess_no < word_length + 1:        
+        if guess_no == word_length:
             guess = prompt('Now enter your final guess. i.e. guess the whole word: ')
             if guess == word:
                 print('You have guessed the word correctly. Congratulations.')
@@ -138,6 +138,7 @@ def start_game():
         else:
             scores += score
         guess_no += 1
+        display_guess_matrix(guess_no, word_length, scores)        
     return	
 
 def main():
