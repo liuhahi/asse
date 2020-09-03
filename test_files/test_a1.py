@@ -159,6 +159,7 @@ class TestCreateGuessLine(TestFunctionality):
         """ test guess 1 length 6 """
         result = self.a1.create_guess_line(1, 6)
         self.assertEqual(result, "Guess 1| * | * | - | - | - | - |")
+
     def test_1_9(self):
         """ test guess 1 length 9 """
         result = self.a1.create_guess_line(1, 9)
