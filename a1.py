@@ -127,10 +127,12 @@ def start_game():
                 print('You have guessed the word correctly. Congratulations.')
             else:
                 print('Your guess was wrong. The correct word was "{}"'.format(word))
-            break
-        guess = prompt('Now enter Guess {}: '.format(guess_no))
+            break        
         start_index = GUESS_INDEX_TUPLE[word_length - 6][guess_no - 1][0]
         end_index = GUESS_INDEX_TUPLE[word_length - 6][guess_no - 1][1]
+        guess = prompt('Now enter Guess {}: '.format(guess_no))
+        while len(guess) != end_index - start_index +1:
+            guess = prompt('Now enter Guess {}: '.format(guess_no))        
         # print("scores", scores, scores == tuple())
         score = (compute_value_for_guess(word, start_index, end_index, guess), )
         if scores == tuple():
