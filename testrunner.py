@@ -1,5 +1,5 @@
-__author__ = 'Steven Summers'
-__version__ = ''
+__author__ = "Steven Summers"
+__version__ = ""
 
 import argparse
 import ctypes
@@ -29,22 +29,22 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 __TEST_RUNNER = True
 
 __all__ = [
-    'AttributeGuesser',
-    'OrderedTestCase',
-    'RedirectStdIO',
-    'TestCase',
-    'TestMaster',
-    'TestOutcome',
-    'skipIfFailed',
-    'timeout'
+    "AttributeGuesser",
+    "OrderedTestCase",
+    "RedirectStdIO",
+    "TestCase",
+    "TestMaster",
+    "TestOutcome",
+    "skipIfFailed",
+    "timeout",
 ]
 
 # DEFAULTS
 DEFAULT_TIMEOUT = 0
 
 # CONSTANTS
-DIFF_OMITTED = '\nDiff is {} characters long. Set TestMaster(max_diff=None) to see it.'
-DUPLICATE_MSG = 'AS ABOVE'
+DIFF_OMITTED = "\nDiff is {} characters long. Set TestMaster(max_diff=None) to see it."
+DUPLICATE_MSG = "AS ABOVE"
 CLOSE_MATCH_CUTOFF = 0.8
 TAB_SIZE = 4
 BLOCK_WIDTH = 80
@@ -52,7 +52,9 @@ BLOCK_TEMPLATE = """\
 /{0}\\
 |{{:^{1}}}|
 \\{0}/\
-""".format('-' * (BLOCK_WIDTH - 2), BLOCK_WIDTH - 2)
+""".format(
+    "-" * (BLOCK_WIDTH - 2), BLOCK_WIDTH - 2
+)
 
 
 class TestTimeout(Exception):
@@ -61,12 +63,14 @@ class TestTimeout(Exception):
 
 @unique
 class TestOutcome(Enum):
-    PASS = '+'
-    FAIL = '-'
-    SKIP = '?'
+    PASS = "+"
+    FAIL = "-"
+    SKIP = "?"
 
 
-def skipIfFailed(test_case: Type[unittest.TestCase] = None, test_name: str = None, tag: str = None):
+def skipIfFailed(
+    test_case: Type[unittest.TestCase] = None, test_name: str = None, tag: str = None
+):
     """
     skipIfFail decorator allows you to skip entire TestCases or specific test
     cases if not all tests pass for a TestCase, or if a specific test case fails
@@ -84,16 +88,24 @@ def skipIfFailed(test_case: Type[unittest.TestCase] = None, test_name: str = Non
     @skipIfFailed(test_name='test_method')
     """
     if test_case is None and test_name is None:
-        raise RuntimeError("test_case and test_name for skipIfFailed can't both be None")
+        raise RuntimeError(
+            "test_case and test_name for skipIfFailed can't both be None"
+        )
 
-    if test_case is not None and test_name is not None and not hasattr(test_case, test_name):
-        raise AttributeError(f'{test_case.__name__} has no method {test_name}')
+    if (
+        test_case is not None
+        and test_name is not None
+        and not hasattr(test_case, test_name)
+    ):
+        raise AttributeError(f"{test_case.__name__} has no method {test_name}")
 
     if tag is not None and test_name is None:
-        raise RuntimeError("test_name must be specified if tag is provided for skipIfFailed")
+        raise RuntimeError(
+            "test_name must be specified if tag is provided for skipIfFailed"
+        )
 
     def decorator(obj: Union[Type[TestCase], Callable]):
-        if hasattr(obj, '__skip_test__'):
+        if hasattr(obj, "__skip_test__"):
             obj.__skip_test__ = obj.__skip_test__.copy()
             obj.__skip_test__.append((test_case, test_name, tag))
         else:
@@ -110,7 +122,9 @@ def skipIfFailed(test_case: Type[unittest.TestCase] = None, test_name: str = Non
     return decorator
 
 
-def import_module(path: str) -> Tuple[Optional[ModuleType], Optional[Tuple[Type, Exception, TracebackType]]]:
+def import_module(
+    path: str
+) -> Tuple[Optional[ModuleType], Optional[Tuple[Type, Exception, TracebackType]]]:
     """
     Dynamically import the Python file (.py) at 'path' the
     """
@@ -120,13 +134,15 @@ def import_module(path: str) -> Tuple[Optional[ModuleType], Optional[Tuple[Type,
 
     spec = importlib.util.spec_from_file_location(name, path)
     if spec is None:
-        raise ValueError(f'The path {path} is invalid. It should be a Python (.py) file path.')
+        raise ValueError(
+            f"The path {path} is invalid. It should be a Python (.py) file path."
+        )
 
     module = importlib.util.module_from_spec(spec)
     with RedirectStdIO(stdin=True, stdout=True) as stdio:
         try:
             spec.loader.exec_module(module)
-            setattr(module, '__TEST_RUNNER_CLEAN_IMPORT', stdio.stdout == '')
+            setattr(module, "__TEST_RUNNER_CLEAN_IMPORT", stdio.stdout == "")
             sys.modules[name] = module
             return module, None
         except:
@@ -142,9 +158,11 @@ def _test_wrapper(test_func):
 
     @wraps(test_func)
     def wrapper(self):
-        interval = getattr(test_func, '__timeout__', 0) or \
-                   getattr(self.__class__, '__timeout__', 0) or \
-                   TestCase.timeout_interval
+        interval = (
+            getattr(test_func, "__timeout__", 0)
+            or getattr(self.__class__, "__timeout__", 0)
+            or TestCase.timeout_interval
+        )
 
         error = None
         if interval <= 0:
@@ -160,13 +178,16 @@ def _test_wrapper(test_func):
                     error = err
 
             if isinstance(error, TestTimeout):
-                self.skipTest(f'Function ran longer than {interval} second(s)')
+                self.skipTest(f"Function ran longer than {interval} second(s)")
 
         if isinstance(error, EOFError):
-            raise EOFError("Got unexpected 'input' call").with_traceback(error.__traceback__)
+            raise EOFError("Got unexpected 'input' call").with_traceback(
+                error.__traceback__
+            )
         if isinstance(error, SystemExit):
             raise RuntimeError(
-                "You should not be using exit, quit or sys.exit").with_traceback(error.__traceback__)
+                "You should not be using exit, quit or sys.exit"
+            ).with_traceback(error.__traceback__)
 
         return None
 
@@ -186,13 +207,17 @@ def timeout(seconds: float = 0):
 
 
 def get_object_name(obj):
-    return getattr(obj, '__qualname__', None) or getattr(obj, '__name__', None) or obj.__class__.__name__
+    return (
+        getattr(obj, "__qualname__", None)
+        or getattr(obj, "__name__", None)
+        or obj.__class__.__name__
+    )
 
 
 class CachedIO(io.StringIO):
     """ Writes all read values and write values to stream """
 
-    __slots__ = ['_stream']
+    __slots__ = ["_stream"]
 
     def __init__(self, stream):
         super().__init__()
@@ -229,12 +254,24 @@ class RedirectStdIO:
         inp == 'World'
     """
 
-    __slots__ = ['_sys_stdin', '_sys_stdout', '_sys_stderr',
-                 '_stdin_stream', '_stdout_stream', '_stderr_stream',
-                 '_stdinout_stream']
+    __slots__ = [
+        "_sys_stdin",
+        "_sys_stdout",
+        "_sys_stderr",
+        "_stdin_stream",
+        "_stdout_stream",
+        "_stderr_stream",
+        "_stdinout_stream",
+    ]
 
-    def __init__(self, *, stdin: bool = False, stdout: bool = False,
-                 stderr: bool = False, stdinout: bool = False):
+    def __init__(
+        self,
+        *,
+        stdin: bool = False,
+        stdout: bool = False,
+        stderr: bool = False,
+        stdinout: bool = False,
+    ):
         self._sys_stdin = None
         self._sys_stdout = None
         self._sys_stderr = None
@@ -280,14 +317,16 @@ class RedirectStdIO:
     def _read_stream(stream: io.StringIO) -> str:
         if stream is None:
             raise RuntimeError(
-                'Attempt to read from a stream that has not been enabled')
+                "Attempt to read from a stream that has not been enabled"
+            )
         return stream.getvalue()
 
     @property
     def stdin(self):
         if self._stdin_stream is None:
             raise RuntimeError(
-                f'stdin has not been set in {self.__class__.__name__}.__init__')
+                f"stdin has not been set in {self.__class__.__name__}.__init__"
+            )
         pos = self._stdin_stream.tell()
         value = self._stdin_stream.read()
         self._stdin_stream.seek(pos)
@@ -297,7 +336,8 @@ class RedirectStdIO:
     def stdin(self, value: str):
         if self._stdin_stream is None:
             raise RuntimeError(
-                f'stdin has not been set in {self.__class__.__name__}.__init__')
+                f"stdin has not been set in {self.__class__.__name__}.__init__"
+            )
 
         if self._stdinout_stream is None:
             self._stdin_stream.seek(0)
@@ -321,7 +361,7 @@ class RedirectStdIO:
 
 
 class RecursionDetector(Bdb):
-    __slots__ = ['_stack']
+    __slots__ = ["_stack"]
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -341,7 +381,7 @@ class RecursionDetector(Bdb):
 
 
 class TimeoutDetector:
-    __slots__ = ['_interval', '_target_id', '_timer']
+    __slots__ = ["_interval", "_target_id", "_timer"]
 
     def __init__(self, interval):
         self._interval = interval
@@ -361,12 +401,15 @@ class TimeoutDetector:
         return False
 
     def stop(self):
-        ret = ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(self._target_id),
-                                                         ctypes.py_object(TestTimeout))
+        ret = ctypes.pythonapi.PyThreadState_SetAsyncExc(
+            ctypes.c_long(self._target_id), ctypes.py_object(TestTimeout)
+        )
         if ret == 0:
             raise ValueError("Invalid thread ID {}".format(self._target_id))
         elif ret > 1:
-            ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(self._target_id), None)
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(
+                ctypes.c_long(self._target_id), None
+            )
             raise SystemError("PyThreadState_SetAsyncExc failed")
 
 
@@ -377,7 +420,7 @@ class AttributeGuesser:
     is raised if no possible match is found.
     """
 
-    __slots__ = ['__object', '__cache', '__fail']
+    __slots__ = ["__object", "__cache", "__fail"]
 
     def __init__(self, obj: Any, fail: bool = True):
         """
@@ -395,8 +438,8 @@ class AttributeGuesser:
     @classmethod
     def get_wrapped_object(cls, attr_guesser):
         if not isinstance(attr_guesser, AttributeGuesser):
-            raise ValueError('attr_guesser must be an instance of AttributeGuesser')
-        return object.__getattribute__(attr_guesser, '_AttributeGuesser__object')
+            raise ValueError("attr_guesser must be an instance of AttributeGuesser")
+        return object.__getattribute__(attr_guesser, "_AttributeGuesser__object")
 
     def __guess_attribute(self, obj: Any, name: str):
         attributes = dict(inspect.getmembers(obj))
@@ -404,15 +447,20 @@ class AttributeGuesser:
         if not matches:
             if self.__fail:
                 raise AttributeError(
-                    f"Found no close match for '{get_object_name(obj)}.{name}'")
+                    f"Found no close match for '{get_object_name(obj)}.{name}'"
+                )
             return None
         return attributes[matches[0]]
 
     def __getattribute__(self, key: str):
-        if key in ('_AttributeGuesser__object', '_AttributeGuesser__cache',
-                   '_AttributeGuesser__guess_attribute', '_AttributeGuesser__fail'):
+        if key in (
+            "_AttributeGuesser__object",
+            "_AttributeGuesser__cache",
+            "_AttributeGuesser__guess_attribute",
+            "_AttributeGuesser__fail",
+        ):
             return object.__getattribute__(self, key)
-        return getattr(object.__getattribute__(self, '_AttributeGuesser__object'), key)
+        return getattr(object.__getattribute__(self, "_AttributeGuesser__object"), key)
 
     def __getattr__(self, key: str):
         cache = self.__cache
@@ -424,19 +472,22 @@ class AttributeGuesser:
         return attr
 
     def __setattr__(self, key: str, value: Any):
-        if key in ('_AttributeGuesser__object', '_AttributeGuesser__cache',
-                   '_AttributeGuesser__fail'):
+        if key in (
+            "_AttributeGuesser__object",
+            "_AttributeGuesser__cache",
+            "_AttributeGuesser__fail",
+        ):
             return object.__setattr__(self, key, value)
         return setattr(self.__object, key, value)
 
     def __repr__(self):
-        return f'AttributeGuesser({self.__object!r})'
+        return f"AttributeGuesser({self.__object!r})"
 
 
 class TestLoader(unittest.TestLoader):
     """ Custom loader class to specify TestCase case order """
 
-    def getTestCaseNames(self, testCaseClass: Type['TestCase']):
+    def getTestCaseNames(self, testCaseClass: Type["TestCase"]):
         """
         Override for unittest.TestLoad.getTestCaseNames
         Return a sorted sequence of method names found within testCaseClass
@@ -480,7 +531,9 @@ class _TestCaseMeta(type):
 
     def __getattr__(cls, item):
         if item not in cls._modules:
-            raise AttributeError(f"type object '{cls.__name__}'' has no attribute '{item}'")
+            raise AttributeError(
+                f"type object '{cls.__name__}'' has no attribute '{item}'"
+            )
         return cls._modules[item]
 
 
@@ -488,6 +541,7 @@ class TestCase(unittest.TestCase, metaclass=_TestCaseMeta):
     """
     Extends the unittest.TestCase defining additional assert methods.
     """
+
     timeout_interval = DEFAULT_TIMEOUT
     member_names: List[str]
     _modules: Dict[str, ModuleType] = {}
@@ -499,36 +553,46 @@ class TestCase(unittest.TestCase, metaclass=_TestCaseMeta):
     def __getattr__(self, item):
         if item in self._modules:
             return self._modules[item]
-        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{item}'"
+        )
 
     @classmethod
     def register_module(cls, name: str, module: ModuleType):
         cls._modules[name] = module
 
     def assertIsCleanImport(self, module, msg=None):
-        if not getattr(module, '__TEST_RUNNER_CLEAN_IMPORT', True):
+        if not getattr(module, "__TEST_RUNNER_CLEAN_IMPORT", True):
             self.fail(msg)
 
-    def assertMultiLineEqual(self, first: str, second: str, msg: Optional[str] = None, strip: bool = False):
+    def assertMultiLineEqual(
+        self, first: str, second: str, msg: Optional[str] = None, strip: bool = False
+    ):
         """
         unittest.TestCase.assertMultiLineEqual with strip keyword arg,
         if True then string is split on newlines with trailing
         whitespace striped and rejoined before
         """
         if strip:
-            first = '\n'.join(s.rstrip() for s in first.splitlines()) + '\n'
-            second = '\n'.join(s.rstrip() for s in second.splitlines()) + '\n'
+            first = "\n".join(s.rstrip() for s in first.splitlines()) + "\n"
+            second = "\n".join(s.rstrip() for s in second.splitlines()) + "\n"
 
         super().assertMultiLineEqual(first, second, msg=msg)
 
     def assertDefined(self, obj: Union[ModuleType, Type], name: str):
         if obj is None:
-            self.fail(msg=f"Got 'None' when checking if '{name}' was defined for a type")
+            self.fail(
+                msg=f"Got 'None' when checking if '{name}' was defined for a type"
+            )
         obj_name = get_object_name(obj)
         if not hasattr(obj, name):
-            self.fail(msg=f"'{obj_name}.{name}' is not defined correctly or not implemented")
+            self.fail(
+                msg=f"'{obj_name}.{name}' is not defined correctly or not implemented"
+            )
 
-    def assertFunctionDefined(self, obj: Union[ModuleType, Type], function_name: str, params: int):
+    def assertFunctionDefined(
+        self, obj: Union[ModuleType, Type], function_name: str, params: int
+    ):
         self.assertDefined(obj, function_name)
         obj_name = get_object_name(obj)
         func = getattr(obj, function_name)
@@ -537,18 +601,28 @@ class TestCase(unittest.TestCase, metaclass=_TestCaseMeta):
                 self.fail(msg=f"{obj_name}.{function_name} needs to be implemented")
             self.fail(msg=f"{obj_name}.{function_name} should be a function")
         num_params = len(inspect.signature(func).parameters)
-        self.assertEqual(num_params, params,
-                         msg=(f"'{function_name}' does not have the correct number of parameters, "
-                              f"expected {params} found {num_params}"))
+        self.assertEqual(
+            num_params,
+            params,
+            msg=(
+                f"'{function_name}' does not have the correct number of parameters, "
+                f"expected {params} found {num_params}"
+            ),
+        )
 
     def assertClassDefined(self, module: ModuleType, class_name: str):
         self.assertDefined(module, class_name)
         class_ = getattr(module, class_name)
-        self.assertIs(inspect.isclass(class_), True, msg=f"{class_name} should be a class")
+        self.assertIs(
+            inspect.isclass(class_), True, msg=f"{class_name} should be a class"
+        )
 
     def assertIsSubclass(self, sub_class: Type, parent_class: Type):
-        self.assertIs(issubclass(sub_class, parent_class), True,
-                      msg=f"'{sub_class}' is not a subclass of '{parent_class}'")
+        self.assertIs(
+            issubclass(sub_class, parent_class),
+            True,
+            msg=f"'{sub_class}' is not a subclass of '{parent_class}'",
+        )
 
     def assertDocString(self, obj: Union[Type, Callable], name: str = None):
         if name is not None:
@@ -556,11 +630,13 @@ class TestCase(unittest.TestCase, metaclass=_TestCaseMeta):
             obj = getattr(obj, name)
 
         if obj is None:
-            self.fail(msg=f"Got 'None' when checking if docstring was defined for a type")
+            self.fail(
+                msg=f"Got 'None' when checking if docstring was defined for a type"
+            )
 
         # used over inspect.getdoc to require a doc string rather than inheriting it
-        doc = getattr(obj, '__doc__', None)
-        if doc is None or doc == '':
+        doc = getattr(obj, "__doc__", None)
+        if doc is None or doc == "":
             self.fail(msg=f"Documentation string is required for '{obj.__qualname__}'")
 
     def assertListSimilar(self, actual: List, expected: List):
@@ -573,7 +649,9 @@ class TestCase(unittest.TestCase, metaclass=_TestCaseMeta):
         # except TypeError:
         #     pass
         if type(actual) is not type(expected):
-            self.fail(f"Got type '{type(actual).__name__}' expected type '{type(expected).__name__}'")
+            self.fail(
+                f"Got type '{type(actual).__name__}' expected type '{type(expected).__name__}'"
+            )
 
         # Fallback
         unexpected = list(actual)
@@ -585,7 +663,7 @@ class TestCase(unittest.TestCase, metaclass=_TestCaseMeta):
                 missing.append(elem)
 
         if unexpected or missing:
-            msg = f'Lists are not similar\n\nActual: {actual}\nExpected: {expected}'
+            msg = f"Lists are not similar\n\nActual: {actual}\nExpected: {expected}"
             if missing:
                 msg += f"\nMissing: {missing}"
             if unexpected:
@@ -621,11 +699,14 @@ class TestCase(unittest.TestCase, metaclass=_TestCaseMeta):
         the failures. This is not in __exit__ due to hiding relevant traceback
         levels the exception message ends up pointing to the last line.
         """
-        msg = ''
-        for error, tag, in self.aggregated_tests:
+        msg = ""
+        for error, tag in self.aggregated_tests:
             if error:
-                msg += '\n' + textwrap.indent(str(error), ' ' * TAB_SIZE) + \
-                       (f' :: {tag}' if tag is not None else '')
+                msg += (
+                    "\n"
+                    + textwrap.indent(str(error), " " * TAB_SIZE)
+                    + (f" :: {tag}" if tag is not None else "")
+                )
 
         if msg:
             self.fail(msg=msg)
@@ -657,13 +738,14 @@ class OrderedTestCase(TestCase):
 
     @property
     def description(self):
-        return f'{self.member_names.index(self.name) + 1}. {super().description}'
+        return f"{self.member_names.index(self.name) + 1}. {super().description}"
 
 
 class TestResult(unittest.TestResult):
     """
     TestResult stores the result of each test in the order they were executed
     """
+
     def __init__(self, stream=None, descriptions=None, verbosity=None):
         super().__init__(stream, descriptions, verbosity)
         self._start = 0
@@ -694,22 +776,28 @@ class TestResult(unittest.TestResult):
 
         super().startTest(test)
 
-    def _apply_skip(self, test: TestCase, test_item: Union[Type[TestCase], FunctionType]):
+    def _apply_skip(
+        self, test: TestCase, test_item: Union[Type[TestCase], FunctionType]
+    ):
         """
         Applies the unittest attributes used for skipping tests if the
         __skip_test__ attribute has been applied to either the test class or
         method using the skipIfFailed decorator.
         """
-        skip_test = getattr(test_item, '__skip_test__', None)
+        skip_test = getattr(test_item, "__skip_test__", None)
         if skip_test is None:
             return
 
         for test_cls, test_name, tag in skip_test:
-            if test_cls is None:  # if none then decorator was applied to current TestCase
+            if (
+                test_cls is None
+            ):  # if none then decorator was applied to current TestCase
                 # Set type of current TestCase and check if test method is defined
                 test_cls = test.__class__
                 if not hasattr(test_cls, test_name):
-                    raise AttributeError(f'{test_cls.__name__} has no method {test_name}')
+                    raise AttributeError(
+                        f"{test_cls.__name__} has no method {test_name}"
+                    )
 
             test_cls_name = test_cls.__name__
 
@@ -717,11 +805,13 @@ class TestResult(unittest.TestResult):
                 # set attributes unittest looks for if a test is marked to skip
                 if test_name is None:
                     test_item.__unittest_skip__ = True
-                    test_item.__unittest_skip_why__ = f'Skipped due to failing/skipping a test from {test_cls_name}'
+                    test_item.__unittest_skip_why__ = (
+                        f"Skipped due to failing/skipping a test from {test_cls_name}"
+                    )
                 else:
                     test_item.__unittest_skip__ = True
-                    tag_msg = f" with tag '{tag}'" if tag is not None else ''
-                    test_item.__unittest_skip_why__ = f'Skipped due to failing/skipping {test_cls_name}.{test_name}{tag_msg}'
+                    tag_msg = f" with tag '{tag}'" if tag is not None else ""
+                    test_item.__unittest_skip_why__ = f"Skipped due to failing/skipping {test_cls_name}.{test_name}{tag_msg}"
 
                 break
         # set custom attribute to None since __unittest_skip__ has been applied
@@ -732,12 +822,15 @@ class TestResult(unittest.TestResult):
         test_results = self.results.get(test_cls_name)
         if test_results is None:
             raise RuntimeError(
-                f"Can't check to skip {test.__class__.__name__}.{test.name} if {test_cls_name} has not run")
+                f"Can't check to skip {test.__class__.__name__}.{test.name} if {test_cls_name} has not run"
+            )
 
         # Check if test for TestCase has been run
         if test_name is not None and test_name not in test_results:
-            raise RuntimeError(f"Can't check to skip {test.__class__.__name__}.{test.name} '"
-                               f"if {test_cls_name}.{test_name} has not run")
+            raise RuntimeError(
+                f"Can't check to skip {test.__class__.__name__}.{test.name} '"
+                f"if {test_cls_name}.{test_name} has not run"
+            )
 
         if test_name is not None:
             test_case, outcome = test_results[test_name]
@@ -748,7 +841,9 @@ class TestResult(unittest.TestResult):
                 if tag_ == tag:
                     return not err  # None or Exception
 
-        elif test_name is None and any(outcome != TestOutcome.PASS for _, outcome in test_results.values()):
+        elif test_name is None and any(
+            outcome != TestOutcome.PASS for _, outcome in test_results.values()
+        ):
             return False
 
         return True
@@ -764,12 +859,18 @@ class TestResult(unittest.TestResult):
         super().addSuccess(test)
 
     @unittest.result.failfast
-    def addFailure(self, test: TestCase, err: Tuple[Type[BaseException], BaseException, TracebackType]):
+    def addFailure(
+        self,
+        test: TestCase,
+        err: Tuple[Type[BaseException], BaseException, TracebackType],
+    ):
         self.add_outcome(test, TestOutcome.FAIL)
         super().addFailure(test, err)
 
     @unittest.result.failfast
-    def addError(self, test: TestCase, err: Tuple[Type[Exception], BaseException, TracebackType]):
+    def addError(
+        self, test: TestCase, err: Tuple[Type[Exception], BaseException, TracebackType]
+    ):
         self.add_outcome(test, TestOutcome.FAIL)
         super().addError(test, err)
 
@@ -782,12 +883,13 @@ class TestResult(unittest.TestResult):
         Override which is used with unittest.TestResult._exc_info_to_string to
         determine what levels of a traceback to skip when formatting the error.
         """
-        return '__TEST_RUNNER' in tb.tb_frame.f_globals or super()._is_relevant_tb_level(tb)
+        return "__TEST_RUNNER" in tb.tb_frame.f_globals or super()._is_relevant_tb_level(
+            tb
+        )
 
     def to_dict(self):
         return {
-            test_cls:
-                {name: outcome.value for name, (test, outcome) in res.items()}
+            test_cls: {name: outcome.value for name, (test, outcome) in res.items()}
             for test_cls, res in self.results.items()
         }
 
@@ -799,29 +901,34 @@ class TestNoPrint(TestCase):
 
     def runTest(self):
         """ check for no unexpected prints """
-        self.assertEqual(self._stdio.stdout, '')
+        self.assertEqual(self._stdio.stdout, "")
 
 
 class TestMaster:
     """
     Core driving class which creates the TestSuite from the provided TestCases
     """
-    separator1 = '=' * BLOCK_WIDTH
-    separator2 = '-' * BLOCK_WIDTH
-    indent = ' ' * TAB_SIZE
+
+    separator1 = "=" * BLOCK_WIDTH
+    separator2 = "-" * BLOCK_WIDTH
+    indent = " " * TAB_SIZE
     _remove_path = re.compile(r'File ".*[\\/]([^\\/]+.py)"')
     _remove_importlib = re.compile(
-        r'(^\s*File \".*importlib.*\".+?(?=\s{2}File \"))', flags=re.DOTALL | re.MULTILINE)
+        r"(^\s*File \".*importlib.*\".+?(?=\s{2}File \"))",
+        flags=re.DOTALL | re.MULTILINE,
+    )
 
-    def __init__(self,
-                 max_diff: int = None,
-                 suppress_stdout: bool = True,
-                 timeout: float = DEFAULT_TIMEOUT,
-                 output_json: bool = False,
-                 hide_paths: bool = True,
-                 ignore_import_fails: bool = False,
-                 include_no_print: bool = False,
-                 scripts: List[Tuple[str, str]] = ()):
+    def __init__(
+        self,
+        max_diff: int = None,
+        suppress_stdout: bool = True,
+        timeout: float = DEFAULT_TIMEOUT,
+        output_json: bool = False,
+        hide_paths: bool = True,
+        ignore_import_fails: bool = False,
+        include_no_print: bool = False,
+        scripts: List[Tuple[str, str]] = (),
+    ):
         """
         Parameters:
             max_diff: Determines the maximum length of diffs output by assert
@@ -845,42 +952,61 @@ class TestMaster:
         """
         # argparse setup
         parser = argparse.ArgumentParser()
-        parser.add_argument("-j", "--json",
-                            help="Whether or not to display output in JSON format.",
-                            action='store_true',
-                            default=output_json)
-        parser.add_argument("-d", "--diff",
-                            help="The maximum number of characters in a diff",
-                            action="store",
-                            default=max_diff,
-                            type=int)
-        parser.add_argument("-t", "--timeout",
-                            help="The maximum time a test is allowed to run before being killed",
-                            action="store",
-                            default=timeout,
-                            type=float)
-        parser.add_argument('-p', '--paths', nargs="+")
-        parser.add_argument('-s', '--scripts', nargs="+")
-        parser.add_argument("--hide-tb-paths",
-                            help="Hide paths from traceback output.",
-                            action="store_true",
-                            default=hide_paths)
-        parser.add_argument("--show-tb-duplicates",
-                            help="Remove duplicates from test output.",
-                            action="store_true",
-                            default=False)
-        parser.add_argument("--ignore-import-fails",
-                            help="Continue tests even if an import fails",
-                            action="store_true",
-                            default=ignore_import_fails)
-        parser.add_argument("--include-no-print",
-                            help="Adds test case for unexpected prints in functions",
-                            action="store_true",
-                            default=include_no_print)
-        parser.add_argument("--suppress-stdout",
-                            help="Suppresses uncaught stdout output while running tests",
-                            action="store_true",
-                            default=suppress_stdout)
+        parser.add_argument(
+            "-j",
+            "--json",
+            help="Whether or not to display output in JSON format.",
+            action="store_true",
+            default=output_json,
+        )
+        parser.add_argument(
+            "-d",
+            "--diff",
+            help="The maximum number of characters in a diff",
+            action="store",
+            default=max_diff,
+            type=int,
+        )
+        parser.add_argument(
+            "-t",
+            "--timeout",
+            help="The maximum time a test is allowed to run before being killed",
+            action="store",
+            default=timeout,
+            type=float,
+        )
+        parser.add_argument("-p", "--paths", nargs="+")
+        parser.add_argument("-s", "--scripts", nargs="+")
+        parser.add_argument(
+            "--hide-tb-paths",
+            help="Hide paths from traceback output.",
+            action="store_true",
+            default=hide_paths,
+        )
+        parser.add_argument(
+            "--show-tb-duplicates",
+            help="Remove duplicates from test output.",
+            action="store_true",
+            default=False,
+        )
+        parser.add_argument(
+            "--ignore-import-fails",
+            help="Continue tests even if an import fails",
+            action="store_true",
+            default=ignore_import_fails,
+        )
+        parser.add_argument(
+            "--include-no-print",
+            help="Adds test case for unexpected prints in functions",
+            action="store_true",
+            default=include_no_print,
+        )
+        parser.add_argument(
+            "--suppress-stdout",
+            help="Suppresses uncaught stdout output while running tests",
+            action="store_true",
+            default=suppress_stdout,
+        )
         self._args = args = parser.parse_args()
 
         TestCase.maxDiff = args.diff
@@ -888,7 +1014,9 @@ class TestMaster:
 
         if args.scripts or args.paths:
             if len(args.scripts or ()) != len(args.paths or ()):
-                parser.error("must have equal number of values for 'imports' and 'paths'")
+                parser.error(
+                    "must have equal number of values for 'imports' and 'paths'"
+                )
             scripts = zip(args.scripts, args.paths)
 
         self._import_errors = []
@@ -908,41 +1036,46 @@ class TestMaster:
     def _add_flavour(flavour: str, test_results: List[Tuple[TestCase, str]]):
         return [(flavour, test, msg) for test, msg in test_results]
 
-    def print_results(self, failed_tests: List[Tuple[str, TestCase, str]], result: TestResult):
+    def print_results(
+        self, failed_tests: List[Tuple[str, TestCase, str]], result: TestResult
+    ):
         # print summary
-        print(BLOCK_TEMPLATE.format('Summary of Results'))
+        print(BLOCK_TEMPLATE.format("Summary of Results"))
         for test_cls, test_cases in result.results.items():
-            passes = sum(outcome == TestOutcome.PASS
-                         for _, outcome in test_cases.values())
-            print(f'{test_cls}: {passes}/{len(test_cases)}')
+            passes = sum(
+                outcome == TestOutcome.PASS for _, outcome in test_cases.values()
+            )
+            print(f"{test_cls}: {passes}/{len(test_cases)}")
             for _test_name, (test, outcome) in test_cases.items():
-                print(f'{self.indent}{outcome.value} {test.description}')
+                print(f"{self.indent}{outcome.value} {test.description}")
 
         # failed imports
         if self._import_errors:
             print(self.separator2)
-            print(BLOCK_TEMPLATE.format('Failed Imports'))
+            print(BLOCK_TEMPLATE.format("Failed Imports"))
             for path, (err_type, _, err_msg) in self._import_errors:
                 print(self.separator1)
-                print(f'REASON: {err_type.upper()} ({path})')
+                print(f"REASON: {err_type.upper()} ({path})")
                 print(self.separator2)
                 print(textwrap.indent(err_msg, self.indent))
 
         # print fails
         if failed_tests:
             print(self.separator2)
-            print(BLOCK_TEMPLATE.format('Failed/Skipped Tests'))
+            print(BLOCK_TEMPLATE.format("Failed/Skipped Tests"))
             prev = None
             for flavour, test, msg in failed_tests:
                 if self._args.show_tb_duplicates:
                     self.print_error(flavour, test, msg.strip())
                 else:
-                    self.print_error(flavour, test, DUPLICATE_MSG if msg == prev else msg.strip())
+                    self.print_error(
+                        flavour, test, DUPLICATE_MSG if msg == prev else msg.strip()
+                    )
                     prev = msg
 
     def print_error(self, flavour: str, test: TestCase, msg: str):
         print(self.separator1)
-        print(f'{flavour}: {test.__class__.__name__} {test.description}')
+        print(f"{flavour}: {test.__class__.__name__} {test.description}")
         print(self.separator2)
         if self._args.hide_tb_paths:
             msg = self._remove_path.sub(r'File "\1"', msg)
@@ -953,22 +1086,24 @@ class TestMaster:
         exc_type, exc_value, exc_traceback = exc_info
         if exc_type is ImportError:
             msg = f"Tests not run due to {name} file not found"
-            err_type = 'import'
+            err_type = "import"
         elif exc_type is SyntaxError:
             msg = "Tests not run due to syntax error"
-            err_type = 'syntax'
+            err_type = "syntax"
         elif exc_type is EOFError:
             msg = "Tests not run due to unexpectedly waiting for input"
-            err_type = 'eof'
+            err_type = "eof"
         elif exc_type is IndentationError:
             msg = "Tests not run due to indentation error"
-            err_type = 'indentation'
+            err_type = "indentation"
         else:
             msg = "Tests not run due to arbitrary exception"
-            err_type = 'exception'
+            err_type = "exception"
 
-        err_msg = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-        err_msg = self._remove_importlib.sub('', err_msg)
+        err_msg = "".join(
+            traceback.format_exception(exc_type, exc_value, exc_traceback)
+        )
+        err_msg = self._remove_importlib.sub("", err_msg)
         if self._args.hide_tb_paths:
             err_msg = self._remove_path.sub(r'File "\1"', err_msg)
 
@@ -983,27 +1118,39 @@ class TestMaster:
         if self._args.json:
             errors = []
             for _, (err_type, msg, err_msg) in self._import_errors:
-                errors.append(dict(error=err_type, error_message=f'{msg}\n{err_msg}'))
-            data = dict(total=total, failed=fails, skipped=skips, passed=passed,
-                        time=runtime, results=result.to_dict(), errors=errors)
+                errors.append(dict(error=err_type, error_message=f"{msg}\n{err_msg}"))
+            data = dict(
+                total=total,
+                failed=fails,
+                skipped=skips,
+                passed=passed,
+                time=runtime,
+                results=result.to_dict(),
+                errors=errors,
+            )
             json.dump(data, sys.stdout, indent=4)
         else:
             # Join the lists sorted by the test order
             failed_tests = sorted(
-                self._add_flavour('FAIL', result.failures) +
-                self._add_flavour('ERROR', result.errors) +
-                self._add_flavour('SKIP', result.skipped),
-                key=lambda t: all_tests.index(t[1]))
+                self._add_flavour("FAIL", result.failures)
+                + self._add_flavour("ERROR", result.errors)
+                + self._add_flavour("SKIP", result.skipped),
+                key=lambda t: all_tests.index(t[1]),
+            )
             self.print_results(failed_tests, result)
             print(self.separator2)
-            print(f'Ran {total} tests in {runtime:.3f} seconds with '
-                  f'{passed} passed/{skips} skipped/{fails} failed.')
+            print(
+                f"Ran {total} tests in {runtime:.3f} seconds with "
+                f"{passed} passed/{skips} skipped/{fails} failed."
+            )
 
-    def run(self, test_cases: List[Union[TestCase, Type[TestCase]]]) -> Optional[TestResult]:
+    def run(
+        self, test_cases: List[Union[TestCase, Type[TestCase]]]
+    ) -> Optional[TestResult]:
         if not self._args.ignore_import_fails and self._import_errors:
             _, (err_type, msg, err_msg) = self._import_errors[0]
             if self._args.json:
-                data = dict(error=err_type, error_message=f'{msg}\n{err_msg}')
+                data = dict(error=err_type, error_message=f"{msg}\n{err_msg}")
                 json.dump(data, sys.stdout, indent=4)
             else:
                 print(BLOCK_TEMPLATE.format(msg))
@@ -1014,15 +1161,17 @@ class TestMaster:
         suite = TestLoader().loadTestCases(test_cases)
 
         # redirect stderr to hide unittest output
-        with RedirectStdIO(stdin=True,
-                           stdout=self._args.suppress_stdout,
-                           stderr=True) as stdio:
-            runner = unittest.TextTestRunner(stream=None,
-                                             verbosity=0,
-                                             resultclass=TestResult)
+        with RedirectStdIO(
+            stdin=True, stdout=self._args.suppress_stdout, stderr=True
+        ) as stdio:
+            runner = unittest.TextTestRunner(
+                stream=None, verbosity=0, resultclass=TestResult
+            )
             if self._args.include_no_print:
                 if not self._args.suppress_stdout:
-                    raise RuntimeError("Can't test for no print without suppressing stdout")
+                    raise RuntimeError(
+                        "Can't test for no print without suppressing stdout"
+                    )
                 suite.addTest(TestNoPrint(stdio))
 
             all_tests = list(suite)
