@@ -24,22 +24,22 @@ def main():
     Handles top-level interaction with user.
     """
     # Write the code for your main function here
-while True:
-	response = prompt()
-	if response == "s":
-		while True:
-			response = prompt2()
-			if response == "FIXED":
-				pass
-			elif response =="ARBITRARY":
-				pass
-	elif response == "h":
-		print(HELP)
-	elif response == "q":
-		print("Thank you for playing")
-		break
-	elif response == "":
-		print(INVALID)
+	while True:
+		response = prompt()
+		if response == "s":
+			while True:
+				response = prompt2()
+				if response == "FIXED":
+					pass
+				elif response =="ARBITRARY":
+					pass
+		elif response == "h":
+			print(HELP)
+		elif response == "q":
+			print("Thank you for playing")
+			break
+		elif response == "":
+			print(INVALID)
 		
 	
 if __name__ == "__main__":
